@@ -1,42 +1,29 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import axios from 'axios';
 import Link from 'next/link';
-import LogoutButton from './LogoutButton';
+import { useAppSelector } from '@/app/store/hooks';
+import UserInfo from './UserInfo';
+// import LoadingSpinner from './LoadingSpinner';
 
 const Header = () => {
-  const router = useRouter();
-  const [user, setUser] = useState<any>(null);
+  const { user, loading } = useAppSelector((state) => state.user);
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setUser(null);
-        return;
-      }
-
-      try {
-        const response = await axios.get('http://localhost/api/user', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        console.log('ユーザー情報:', response.data);
-        setUser(response.data);
-      } catch (error) {
-        console.error('ユーザー情報の取得に失敗しました', error);
-        // トークンが無効な場合はログアウトさせる
-        localStorage.removeItem('token');
-        setUser(null);
-        router.push('/login');
-      }
-    };
-
-    fetchUser();
-  }, []);
+  if (loading) {
+    return (
+      <header className="bg-white shadow">
+        <div className="container flex items-center justify-between px-4 py-4 mx-auto">
+          <h1 className="text-xl font-bold text-gray-700">
+            <Link href="/">顧客管理システム</Link>
+          </h1>
+          <div className="flex items-center">
+            {/* ローディングスピナーを表示 */}
+            <div className="w-6 h-6 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+        </div>
+      </header>
+    );
+  }
 
   return (
     <header className="bg-white shadow">
@@ -79,12 +66,7 @@ const Header = () => {
                 </li>
               </>
             )}
-            {user && (
-              <li className="text-gray-600">
-                {user.name}さん：
-                <LogoutButton />
-              </li>
-            )}
+            {user && <UserInfo user={user} />}
           </ul>
         </nav>
       </div>
